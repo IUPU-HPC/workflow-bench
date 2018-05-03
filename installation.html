@@ -55,12 +55,371 @@
 <h2>Install transport methods<a class="headerlink" href="#install-transport-methods" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="dataspaces-dimes">
 <h3>Dataspaces/Dimes<a class="headerlink" href="#dataspaces-dimes" title="Permalink to this headline">¶</a></h3>
+<p>DataSpaces/Dimes 1.6.2 is used by us.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>wget http://personal.cac.rutgers.edu/TASSL/projects/data/downloads/dataspaces-latest.tar.gz
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This may lead to newer versions than 1.6.2, which we may not have tested</p>
+</div>
+<p>DataSpaces can be configured using the scripts:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>#!/bin/bash
+#
+# This script is for configuring adios on the authors&#39; machines
+# You can study it to figure out how to configure adios on your system
+#
+
+#SRCDIR=`dirname ${BASH_SOURCE[0]}`
+
+if [ `hostname | cut -c 1-2` == &quot;br&quot; ]; then
+    #######################
+    # Bridges #
+    #######################
+    echo &quot;Configure on  Bridges.&quot;
+    #module load gcc
+    #module load mpi/gcc_mvapich
+    #module load cmake
+    #rdmacm_root=~/envs/rdmacm/
+    #CFLAGS=&quot;-DLINUX -g -O3 -fPIC -DHAVE_INFINIBAND&quot; \
+
+    # if tau is configured 
+    if [[ $1 == tau ]]; then
+        echo &quot;using tau compiler and mpi&quot;
+        myCC=tau_cc.sh
+        myCXX=tau_cxx.sh
+        myFC=tau_f90.sh
+        myprefix=${HOME}/envs/Dataspacesroot_tau
+
+    # if use intel compiler/mpi
+    elif [[ $1 == intel ]]; then
+             echo &quot;using intel compiler and mpi&quot;
+        myCC=mpiicc
+        myCXX=mpiicpc
+        myFC=mpiifort
+        myprefix=${HOME}/envs/Dataspacesroot
+        
+
+    else
+       
+        echo &quot;using intel compiler with mvapich&quot;
+        myCC=&quot;mpicc&quot;
+        myCXX=&quot;mpicxx&quot;
+        myFC=&quot;mpif90&quot;
+        myCFLAGS=&quot;&quot;
+        myFCFLAGS=&quot;&quot;
+        myprefix=${HOME}/envs/gcc_mvapich/Dataspacesroot
+
+
+    fi
+
+
+    module list
+
+    #export CFLAGS=&quot;-I /usr/src/kernels/3.10.0-514.26.2.el7.x86_64/include/ -g -O3 -fPIC&quot;
+    #export LIBS=&quot; -lpthread -lm&quot;
+    #${SRCDIR}/configure --prefix=${HOME}/envs/Dataspacesroot \
+    ./configure --prefix=${myprefix} \
+        CC=${myCC} \
+        CXX=${myCXX} \
+        FC=${myFC} \
+        CFLAGS=&quot;${myCFLAGS} -O3&quot; \
+        FCFLAGS=&quot;${myFCFLAGS}&quot; \
+        LIBS=&quot;-lpthread -lm&quot; \
+        --enable-dimes \
+        --with-ib-interface=ib0 \
+        --with-dimes-rdma-buffer-size=1024 \
+
+elif [ `hostname | cut -c 8-16` == &quot;stampede2&quot; ]; then
+    #######################
+    # Stampede #
+    #######################
+    echo &quot;Configure on  stampede2&quot;
+    # if tau is configured 
+    if [[ $1 == tau ]]; then
+        myCC=tau_cc.sh
+        myCXX=tau_cxx.sh
+        myFC=tau_f90.sh
+        myprefix=${WORK}/envs/Dataspacesroot_tau
+    elif [[ $1 == mvapich ]]; then
+        myCC=mpicc
+        myCXX=mpicxx
+        myFC=mpif90
+        myprefix=${WORK}/envs/Dataspacesroot_mvapich
+
+    else
+        myCC=mpicc
+        myCXX=mpicxx
+        myFC=mpif90
+        myCFLAGS=&quot;-xCORE-AVX2 -axMIC-AVX512&quot;
+        myprefix=${WORK}/envs/Dataspacesroot
+    fi
+
+
+    module list
+
+    #export CFLAGS=&quot;-I /usr/src/kernels/3.10.0-514.26.2.el7.x86_64/include/ -g -O3 -fPIC&quot;
+    #export LIBS=&quot; -lpthread -lm&quot;
+    #${SRCDIR}/configure --prefix=${HOME}/envs/Dataspacesroot \
+    ./configure --prefix=${myprefix} \
+        CC=${myCC} \
+        CXX=${myCXX} \
+        FC=${myFC} \
+        CFLAGS=&quot;${myCFLAGS} -O3&quot; \
+        LIBS=&quot;-lpthread -lm&quot; \
+        --enable-dimes \
+        --with-dimes-rdma-buffer-size=1024 \
+        --with-ib-interface=ib0 \
+        --with-infiniband-timeout=300 \
+
+ 
+
+
+elif [ `hostname | cut -c 1-5` == &quot;comet&quot; ]; then
+
+    #######################
+    # Comet #
+    #######################
+    echo &quot;Configure on  Comet&quot;
+    module purge
+    module load gnutools
+    module load gnu
+    module load mvapich2_ib/2.1
+    module load cmake
+
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpif90
+
+    export CFLAGS=&quot;-g -O3 -fPIC&quot;
+    export LIBS=&quot; -lpthread -lm&quot;
+    ${SRCDIR}/configure --prefix=${HOME}/envs/Dataspacesroot \
+        --disable-fortran \
+        --enable-dimes \
+
+else
+    echo &quot;Could not determine what machine is this.&quot;
+    echo &quot;This script is for configuring adios on the authors&#39; machines.&quot;
+    echo &quot;You can study it to figure out how to configure adios on your system.&quot;
+fi
+</pre></div>
+</div>
 </div>
 <div class="section" id="adios">
 <h3>ADIOS<a class="headerlink" href="#adios" title="Permalink to this headline">¶</a></h3>
+<p>ADIOS can be obtained  by</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>wget wget http://users.nccs.gov/~pnorbert/adios-1.13.0.tar.gz
+</pre></div>
+</div>
+<p>It can be configured using the script:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>#!/bin/bash
+#
+# This script is for configuring adios on the authors&#39; machines
+# You can study it to figure out how to configure adios on your system
+#
+
+SRCDIR=`dirname ${BASH_SOURCE[0]}`
+
+if [ `hostname | cut -c 1-2` == &quot;br&quot; ]; then
+
+    #######################
+    # Bridges             #
+    #######################
+    echo &quot;Configure on ADIOS On Bridges.&quot;
+
+
+    if [[ $1 == tau ]]; then
+        echo &quot;using tau compiler and mpi&quot;
+        #myCC=tau_cc.sh
+        #myCXX=tau_cxx.sh
+        #myFC=tau_f90.sh
+        # run with make CC=tau_cc.sh
+        ## tau  is instructed with gcc, instaled by Feng Li in env
+        myCC=tau_cc.sh
+        myCXX=tau_cxx.sh
+        myFC=tau_f90.sh
+        myDataspaces=${HOME}/envs/Dataspacesroot_tau
+        myFlexpath=${HOME}/envs/Flexpath_gcc_mvapich_tau/
+        myprefix=${HOME}/envs/ADIOSroot_gcc_mvapich_tau
+
+    # if use intel compiler/mpi
+    elif [[ $1 == intel ]]; then
+        echo &quot;using intel compiler and mpi&quot;
+        myCC=mpiicc
+        myCXX=mpiicpc
+        myFC=mpiifort
+        myDataspaces=${HOME}/envs/Dataspacesroot
+        myFlexpath=${HOME}/envs/Flexpath
+        myprefix=${HOME}/envs/ADIOSroot
+
+
+        
+    else
+        echo &quot;using gnu compiler with mvapich&quot;
+        myCC=mpicc
+        myCXX=mpicxx
+        myFC=mpif90
+        myDataspaces=${HOME}/envs/gcc_mvapich/Dataspacesroot
+        myFlexpath=${HOME}/envs/gcc_mvapich/Flexpath
+        myprefix=${HOME}/envs/gcc_mvapich/ADIOSroot
+
+        
+    fi
+    module list
+
+    #rdmacm_root=~/envs/rdmacm/
+
+    ./configure --prefix=${myprefix} \
+        CC=${myCC} \
+        CXX=${myCXX} \
+        FC=${myFC} \
+        MPICC=${myCC} \
+        MPICXX=${myCXX} \
+        MPIFC=${myFC} \
+        CFLAGS=&quot;-O3 -fPIC&quot;\
+        LIBS=&quot;-lrdmacm -libverbs -lpthread -lm&quot; \
+        --enable-dependency-tracking \
+        --enable-timers \
+        --disable-fortran \
+        --disable-timer-events \
+        --with-dataspaces=${myDataspaces} \
+        --with-dimes=${myDataspaces}  \
+        --with-flexpath=${myFlexpath} \
+
+elif [ `hostname | cut -c 8-16` == &quot;stampede2&quot; ]; then
+    #######################
+    # Stampede #
+    #######################
+    echo &quot;Configure on  stampede2&quot;
+    
+    if [[ $1 == tau ]]; then
+        myCC=tau_cc.sh
+        myCXX=tau_cxx.sh
+        myFC=tau_f90.sh
+        myDataspaces=${WORK}/envs/Dataspacesroot_tau
+        myprefix=${WORK}/envs/ADIOSroot_tau
+    else
+        myCC=mpicc
+        myCXX=mpicxx
+        myFC=mpif90
+        myCFLAGS=&quot;-xCORE-AVX2 -axMIC-AVX512&quot;
+        myDataspaces=${WORK}/envs/Dataspacesroot
+        myprefix=${WORK}/envs/ADIOSroot
+    fi
+    module list
+
+    #rdmacm_root=~/envs/rdmacm/
+
+    ./configure --prefix=${myprefix} \
+        CC=${myCC} \
+        CXX=${myCXX} \
+        FC=${myFC} \
+        MPICC=${myCC} \
+        MPICXX=${myCXX} \
+        MPIFC=${myFC} \
+        CFLAGS=&quot;-O3 -fPIC ${myCFLAGS}&quot; \
+        LIBS=&quot;-lrdmacm -libverbs -lpthread -lm&quot; \
+        --enable-dependency-tracking \
+        --enable-timers \
+        --disable-fortran \
+        --disable-timer-events \
+        --with-dataspaces=${myDataspaces} \
+        --with-dimes=${myDataspaces}  \
+        --with-flexpath=${WORK}/envs/Flexpath \
+
+
+
+elif [ `hostname | cut -c 1-5` == &quot;comet&quot; ]; then
+
+    #######################
+    # Comet        #
+    #######################
+    echo &quot;Configure ADIOS on Comet.&quot;
+    module purge
+    module load gnutools/2.69
+    module load gnu mvapich2_ib
+    module load cmake
+    #module load gnutools
+    #module load gnu openmpi_ib
+    #module load cmake
+
+
+    export MPICC=mpicc
+    export MPICXX=mpicxx
+    export MPIFC=mpif90
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpif90
+
+    export CFLAGS=&quot;-g -O3 -fPIC  &quot;
+    export LIBS=&quot;-lrdmacm -libverbs -lpthread -lm&quot;
+    ${SRCDIR}/configure --prefix=${HOME}/envs/ADIOSroot \
+        --enable-dependency-tracking \
+        --enable-timers \
+        --disable-timer-events \
+        --disable-fortran \
+        --with-dataspaces=${HOME}/envs/Dataspacesroot  \
+        --with-dimes=${HOME}/envs/Dataspacesroot  \
+        --with-flexpath=${HOME}/envs/Flexpath \
+
+else
+    echo &quot;Could not determine what machine is this.&quot;
+    echo &quot;This script is for configuring adios on the authors&#39; machines.&quot;
+    echo &quot;You can study it to figure out how to configure adios on your system.&quot;
+fi
+    
+    
+    
+</pre></div>
+</div>
 </div>
 <div class="section" id="flexpath">
 <h3>Flexpath<a class="headerlink" href="#flexpath" title="Permalink to this headline">¶</a></h3>
+<p>First obtain the package</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">flexpath_adios_1_13</span> <span class="o">&amp;&amp;</span> <span class="n">cd</span> <span class="n">flexpath_adios_1_13</span>
+<span class="n">wget</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">cc</span><span class="o">.</span><span class="n">gatech</span><span class="o">.</span><span class="n">edu</span><span class="o">/</span><span class="n">systems</span><span class="o">/</span><span class="n">projects</span><span class="o">/</span><span class="n">EVPath</span><span class="o">/</span><span class="n">chaos_bootstrap</span><span class="o">.</span><span class="n">pl</span>
+</pre></div>
+</div>
+<p>Bootstrap:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>perl chaos_bootstrap.pl adios-1.13 $WORK/envs/Flexpath &amp;&gt; config.lifen.log &amp;
+</pre></div>
+</div>
+<p>build and install:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">perl</span> <span class="n">chaos_build</span><span class="o">.</span><span class="n">pl</span>  <span class="o">-</span><span class="n">c</span> <span class="o">~/</span><span class="n">Workspaces</span><span class="o">/</span><span class="n">General_Data_Broker</span><span class="o">/</span><span class="n">lbm_adios</span><span class="o">/</span><span class="n">configs</span><span class="o">/</span><span class="n">Flexpath_build_config</span> <span class="o">&amp;&gt;</span> <span class="n">make</span><span class="o">.</span><span class="n">log</span> <span class="o">&amp;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="decaf">
+<h3>Decaf<a class="headerlink" href="#decaf" title="Permalink to this headline">¶</a></h3>
+<p>We use decaf, commit number: 637eb58
+The decaf project is <a class="reference external" href="https://bitbucket.org/tpeterka1/decaf">here</a></p>
+<p>Users can follow the instructions to compelete installation.
+We also provide installation scripts for bridges:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>cmake .. \
+-DCMAKE_INSTALL_PREFIX=$WORK/software/install \
+-DCMAKE_C_COMPILER=gcc \
+-DCMAKE_CXX_COMPILER=g++ \
+-DCMAKE_CXX_FLAGS=-O3 \
+-DCMAKE_CXX_FLAGS=-O3 \
+-Dtransport_mpi=on \
+-Dtransport_cci=on \
+-Dtransport_file=off \
+-DCCI_PREFIX:PATH=$WORK/software/install \
+-DBOOST_ROOT:PATH=$WORK/software/install
+
+</pre></div>
+</div>
+<p>and for stampede2:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">..</span> \
+<span class="o">-</span><span class="n">DCMAKE_INSTALL_PREFIX</span><span class="o">=/</span><span class="n">work</span><span class="o">/</span><span class="mi">04446</span><span class="o">/</span><span class="n">tg837458</span><span class="o">/</span><span class="n">stampede2</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">install</span>\
+<span class="o">-</span><span class="n">DCMAKE_C_COMPILER</span><span class="o">=</span><span class="n">icc</span> \
+<span class="o">-</span><span class="n">DCMAKE_CXX_COMPILER</span><span class="o">=</span><span class="n">icpc</span> \
+<span class="o">-</span><span class="n">Dtransport_mpi</span><span class="o">=</span><span class="n">on</span> \
+<span class="o">-</span><span class="n">Dtransport_cci</span><span class="o">=</span><span class="n">on</span> \
+<span class="o">-</span><span class="n">Dtransport_file</span><span class="o">=</span><span class="n">off</span> \
+<span class="o">-</span><span class="n">DCCI_PREFIX</span><span class="p">:</span><span class="n">PATH</span><span class="o">=/</span><span class="n">work</span><span class="o">/</span><span class="mi">04446</span><span class="o">/</span><span class="n">tg837458</span><span class="o">/</span><span class="n">stampede2</span><span class="o">/</span><span class="n">software</span><span class="o">/</span><span class="n">install</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
