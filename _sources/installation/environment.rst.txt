@@ -1,15 +1,21 @@
+.. _zipper_env:
+
 Environments
 ============================
 
-Bridges: `PSC Bridges
-<https://www.psc.edu/bridges>`_
+PSC Bridges, more information in `Bridges page`_
+
+.. _Bridges page: <https://www.psc.edu/bridges>
 
 
-Stampede: `TACC Stampde2
-<https://portal.tacc.utexas.edu/user-guides/stampede2>`_
+Stampede 2: more information in `Stampede2 page`_
 
-Modules
+.. _Stampede2 page: https://portal.tacc.utexas.edu/user-guides/stampede2>
+
+Loadable Modules
 ============================
+
+.. _zipper_modules:
 
 Modules in Bridges::
     

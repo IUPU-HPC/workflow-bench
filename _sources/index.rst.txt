@@ -15,7 +15,7 @@ This is the documentation of zipper-runtime.
    reference/index
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Installation & Configuration
 
    installation/index
