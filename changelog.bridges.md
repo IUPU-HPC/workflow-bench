@@ -12,6 +12,15 @@ versions
 		~/Downloads/flexpath/flexpath_adios_1_12_gnu_mvapich_tauperl chaos_bootstrap.pl adios-1.12 $HOME/envs/Flexpath_gcc_mvapich_tau &> config.lifen.log
 	raw_dspacesraw_gcc_mvapich
 ----------------------------------------------------------------------------------
+## May 16
+[changed]:
+1. reorganized the folders and remove lbm code from repository
+2. rename the lbm_adios as workflow-bench, and init a new reposity inside it
+
+[todo]:
+1. fix doc path
+2. verify the build
+
 ## April 2
 [Doubt]:
 1. in DataSpaces README, 16G each process, why need 5 server instead of 10 instead of 20
