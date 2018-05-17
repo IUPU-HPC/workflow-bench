@@ -1,0 +1,10 @@
+cmake .. \
+-DCMAKE_INSTALL_PREFIX=$WORK/software/install_tau \
+-DCMAKE_C_COMPILER=tau_cc.sh \
+-DCMAKE_CXX_COMPILER=tau_cxx.sh \
+-Dtransport_mpi=on \
+-Dtransport_cci=on \
+-Dtransport_file=off \
+-DCCI_PREFIX:PATH=$WORK/software/install \
+-DBOOST_ROOT:PATH=$WORK/software/install
+

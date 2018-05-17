@@ -1,0 +1,138 @@
+#!/bin/bash
+#
+# This script is for configuring adios on the authors' machines
+# You can study it to figure out how to configure adios on your system
+#
+
+#SRCDIR=`dirname ${BASH_SOURCE[0]}`
+
+if [ `hostname | cut -c 1-2` == "br" ]; then
+    #######################
+    # Bridges #
+    #######################
+    echo "Configure on  Bridges."
+    #module load gcc
+    #module load mpi/gcc_mvapich
+    #module load cmake
+    #rdmacm_root=~/envs/rdmacm/
+    #CFLAGS="-DLINUX -g -O3 -fPIC -DHAVE_INFINIBAND" \
+
+    # if tau is configured 
+    if [[ $1 == tau ]]; then
+        echo "using tau compiler and mpi"
+        myCC=tau_cc.sh
+        myCXX=tau_cxx.sh
+        myFC=tau_f90.sh
+        myprefix=${HOME}/envs/Dataspacesroot_tau
+
+    # if use intel compiler/mpi
+    elif [[ $1 == intel ]]; then
+             echo "using intel compiler and mpi"
+        myCC=mpiicc
+        myCXX=mpiicpc
+        myFC=mpiifort
+        myprefix=${HOME}/envs/Dataspacesroot
+        
+
+    else
+       
+        echo "using intel compiler with mvapich"
+        myCC="mpicc"
+        myCXX="mpicxx"
+        myFC="mpif90"
+        myCFLAGS=""
+        myFCFLAGS=""
+        myprefix=${HOME}/envs/gcc_mvapich/Dataspacesroot
+
+
+    fi
+
+
+    module list
+
+    #export CFLAGS="-I /usr/src/kernels/3.10.0-514.26.2.el7.x86_64/include/ -g -O3 -fPIC"
+    #export LIBS=" -lpthread -lm"
+    #${SRCDIR}/configure --prefix=${HOME}/envs/Dataspacesroot \
+    ./configure --prefix=${myprefix} \
+        CC=${myCC} \
+        CXX=${myCXX} \
+        FC=${myFC} \
+        CFLAGS="${myCFLAGS} -O3" \
+        FCFLAGS="${myFCFLAGS}" \
+        LIBS="-lpthread -lm" \
+        --enable-dimes \
+        --with-ib-interface=ib0 \
+        --with-dimes-rdma-buffer-size=1024 \
+
+elif [ `hostname | cut -c 8-16` == "stampede2" ]; then
+    #######################
+    # Stampede #
+    #######################
+    echo "Configure on  stampede2"
+    # if tau is configured 
+    if [[ $1 == tau ]]; then
+        myCC=tau_cc.sh
+        myCXX=tau_cxx.sh
+        myFC=tau_f90.sh
+        myprefix=${WORK}/envs/Dataspacesroot_tau
+    elif [[ $1 == mvapich ]]; then
+        myCC=mpicc
+        myCXX=mpicxx
+        myFC=mpif90
+        myprefix=${WORK}/envs/Dataspacesroot_mvapich
+
+    else
+        myCC=mpicc
+        myCXX=mpicxx
+        myFC=mpif90
+        myCFLAGS="-xCORE-AVX2 -axMIC-AVX512"
+        myprefix=${WORK}/envs/Dataspacesroot
+    fi
+
+
+    module list
+
+    #export CFLAGS="-I /usr/src/kernels/3.10.0-514.26.2.el7.x86_64/include/ -g -O3 -fPIC"
+    #export LIBS=" -lpthread -lm"
+    #${SRCDIR}/configure --prefix=${HOME}/envs/Dataspacesroot \
+    ./configure --prefix=${myprefix} \
+        CC=${myCC} \
+        CXX=${myCXX} \
+        FC=${myFC} \
+        CFLAGS="${myCFLAGS} -O3" \
+        LIBS="-lpthread -lm" \
+        --enable-dimes \
+        --with-dimes-rdma-buffer-size=1024 \
+        --with-ib-interface=ib0 \
+        --with-infiniband-timeout=300 \
+
+ 
+
+
+elif [ `hostname | cut -c 1-5` == "comet" ]; then
+
+    #######################
+    # Comet #
+    #######################
+    echo "Configure on  Comet"
+    module purge
+    module load gnutools
+    module load gnu
+    module load mvapich2_ib/2.1
+    module load cmake
+
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpif90
+
+    export CFLAGS="-g -O3 -fPIC"
+    export LIBS=" -lpthread -lm"
+    ${SRCDIR}/configure --prefix=${HOME}/envs/Dataspacesroot \
+        --disable-fortran \
+        --enable-dimes \
+
+else
+    echo "Could not determine what machine is this."
+    echo "This script is for configuring adios on the authors' machines."
+    echo "You can study it to figure out how to configure adios on your system."
+fi

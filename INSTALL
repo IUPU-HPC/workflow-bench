@@ -1,0 +1,85 @@
+This file is deprecated, install instructions has been moved to docs/source/installtation.rst
+
+see [this wiki](https://github.iu.edu/IUPUI-CS-HPC/data_broker_lammps/wiki) for more details
+
+
+
+
+
+
+## Environment settings in Bridges:
+* 
+1. modules
+    Currently Loaded Modulefiles:
+        1) psc_path/1.1      2) slurm/17.02.5     3) git/2.10.2        4) mpi/gcc_mvapich
+2. other softwares
+    * tau:(include tau-2.26.3 and pdtoolkit)
+        * path
+            built manually(gcc+mvapich) at "~/Downloads/tau_bundle/"
+            installed at ~/env/tau_bundle
+        * environment varaibles
+
+            export TAU_MAKEFILE=/home/fli5/envs/tau_bundle/tau/x86_64/lib/Makefile.tau-papi-ompt-mpi-pdt-openmp
+            export TAU_OPTIONS="-optRevert"
+            export PATH="/home/fli5/envs/tau_bundle/tau/x86_64/bin:/home/fli5/envs/tau_bundle/pdt/x86_64/bin:/home/lifeng/tools/anaconda/bin:$PATH"
+    * transport libraries
+        * path 
+            built in ~/Downloads/transport_bundle_gcc_mvapich/
+            install at ~/envs/gcc_mvapich(this will include ADIOSroot, Dataspaceroot, Flexpath)
+
+        * binaries
+            a full-feattured binary copy is here: https://github.iu.edu/lifen/transport_binaries
+            cp the 3 folders(ADIOSroot, Dataspaceroot Flexpath) to ~/envs/gcc_mvapich, 
+
+    * transport libraries buit using tau
+        * path
+            built in ~/Downloads/transport_bundle_gcc_mvapich
+
+            installed in "$ENV{WORK}/envs/transports_tau/ 
+
+            this is installed in yuankun's machine,
+            (the working version in my machine, I use my machine to get the result) are still scattered to 
+                Dataspacesroot_gnu_mvapich
+                Flexpath_gnu_mvapich
+                ADIOSroot_gnu_mvapioch
+
+        
+        * note
+            currently I cannot build ADIOS+FLEXPATH+application+DATASPACE all with tau_cc.ssh
+            a workaround is for use unstructed Flexpath and build all the other with taucc.
+            Somehow instructed ADIOS cannot recoganize instructed ADIOS. But we didn;t show the
+            trace to ADIOS/DIMES, this should be fine
+             
+
+
+
+## build
+    if buiding for Stampede2, please add corresponding avx CFLAGS
+    if getting warning of not finding libraries evpath,ffs,atl,dill, cercs_env, please append Flexpath library path to LD_LIBRARY_PATH
+
+    *added in Oct 26
+        now compiler and transport library path are automatically confgiured using CMAKE_BUILD_TYPE
+
+    to build in stampede:
+    ```
+    mkdir build && cd build
+    cmake ..
+    ```
+
+    build with tau trace support
+    ```
+    mkdir build_tau && cd build_tau
+    cmake -DCMAKE_BUILD_TYPE=Stampede_TAU ..
+    ```
+
+    build in bridges
+    ```
+    mkdir build && cd build
+    cmake -DCMAKE_BUILD_TYPE=Bridges ..
+    ```
+            
+
+    
+    
+    
+

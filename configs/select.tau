@@ -1,0 +1,14 @@
+#Tell tau to not profile these functions
+BEGIN_EXCLUDE_LIST
+boost::#
+
+END_EXCLUDE_LIST
+
+#Exclude these files from profiling
+BEGIN_FILE_EXCLUDE_LIST
+
+ /opt/apps/intel17/boost/1.64/include/*
+ /opt/apps/intel17/boost/1.64/lib/libboost_serialization.so.1.64.0
+ *.so
+
+END_FILE_EXCLUDE_LIST

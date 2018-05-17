@@ -1,0 +1,8 @@
+cmake .. \
+-DCMAKE_INSTALL_PREFIX=/work/04446/tg837458/stampede2/software/install\
+-DCMAKE_C_COMPILER=icc \
+-DCMAKE_CXX_COMPILER=icpc \
+-Dtransport_mpi=on \
+-Dtransport_cci=on \
+-Dtransport_file=off \
+-DCCI_PREFIX:PATH=/work/04446/tg837458/stampede2/software/install

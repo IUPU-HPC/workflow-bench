@@ -1,0 +1,77 @@
+%   INSTALL_DIRECTORY 
+%   this is variable substituted inside perl script.
+%   possible values are:
+%	$ARCH -- the result of `cercs_arch` or the -a flag,
+%	$hostname  -- the host where the build is performed
+%	$HOME  -- the $HOME environment variable value during the build
+%	$project  --  the project name (like "ffs", "evpath", etc.)
+%	$repository  --  like "kaos" or "github"
+INSTALL_DIRECTORY=/home/fli5/envs/Flexpath_gcc_mvapich_tau
+
+%   VERSION_TAG  -  various values, including "development", "stable", etc.
+%
+VERSION_TAG=adios-1.12
+
+%BUILDLIST
+% project	repository
+dill		korvogithub
+cercs_env	korvogithub
+atl		korvogithub
+ffs		korvogithub
+enet		korvogithub
+nnti		korvogithub
+evpath		korvogithub
+echo2		kaos
+comm_group	kaos
+cmrpc		kaos
+pds		kaos
+gs		kaos
+lgs		kaos
+libbench	kaos
+
+%REPOSITORIES
+%
+% database of archive names, source code tool and repo spec values to use
+%
+% format for each line:  <archive-name>  <tool> <value for CVSROOT>
+kaos svn http://svn.research.cc.gatech.edu/kaos/$project/trunk
+kaosarch svn http://svn.research.cc.gatech.edu/kaos/$project/trunk
+korvogithub git https://github.com/GTkorvo/$project.git
+
+% special flags
+DISABLE_TESTING
+%ENABLE_CDASH_SUBMIT
+%ENABLE_CDASH_VALGRIND
+%ENABLE_DEBUG_BUILD
+
+%  uncomment below to set results files dir (default /tmp)
+RESULTS_FILES_DIR=/home/fli5/Downloads/flexpath/flexpath_adios_1_12_gnu_mvapich_tau/build_results
+
+%  build master directory specificiation
+BUILD_AREA=/home/fli5/Downloads/flexpath/flexpath_adios_1_12_gnu_mvapich_tau/build_area
+
+%CONFIGURE/CMAKE ARGUMENTS
+%
+% format for each line:  <archive-name>  cmake/configure <arguments>
+%
+%   configure arguments are variable substituted inside perl script.
+%   possible values are: 
+%	$ARCH -- the result of `cercs_arch` or the -a flag,
+%	$hostname  -- the host where the build is performed
+%	$HOME  -- the $HOME environment variable value during the build
+%	$project  --  the project name (like "ffs", "evpath", etc.)
+%	$repository  --  like "kaos" or "github"
+% kaos configure
+% kaos cmake
+%
+%
+%   The entries below are often useful on HPC machines that require/desire static linking.
+%	To use, comment out the kaos and korvogithub lines above and uncomment those below.
+%       If you use these, comment out everything after 'evpath' in the 'BUILDLIST' above.
+%
+kaos configure CC=tau_cc.sh CXX=tau_cxx.sh
+kaos cmake -DCMAKE_C_COMPILER=tau_cc.sh -DCMAKE_CXX_COMPILER=tau_cxx.sh -DCMAKE_C_FLAGS=-fPIC 
+
+% korvogithub configure --disable-shared CC=cc CXX=CC
+% korvogithub cmake -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_COMPILER=CC -DBUILD_SHARED_STATIC=STATIC -DCMAKE_C_FLAGS=-fPIC -DCMAKE_CXX_FLAGS=-fPIC -DTARGET_CNL=1
+%

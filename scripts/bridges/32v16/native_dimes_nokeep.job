@@ -1,0 +1,41 @@
+#!/bin/bash
+#SBATCH --job-name="native_dimes_nokeep"
+#SBATCH --output="results/%j.out"
+#SBATCH --partition=RM
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=28
+#SBATCH -t 00:5:00
+#SBATCH --export=ALL
+#SBATCH --mail-type=BEGIN
+#SBATCH --mail-user=lifen@iupui.edu
+
+#This job runs with 2 nodes, 24 cores per node for a total of 48 cores.
+#ibrun in verbose mode will give binding detail ##################parameter setting#################
+CASE_NAME=raw_dspaces_nokeep
+FILESIZE2PRODUCE=256 # 64*64*256*2*8 = 16MB per proc
+NSTOP=10 # how many steps
+
+# procs placement
+num_apps=3
+
+# slots used by this app
+procs_this_app=(4 32 16)
+
+# number of nodes used by this app
+nodes_this_app=(1 2 1)
+
+
+PBS_O_HOME=$HOME
+PBS_O_WORKDIR=$(pwd)
+export SCRATCH_DIR=${SCRATCH}/data_broker_adios/${SLURM_JOBID}
+#export I_MPI_JOB_RESPECT_PROCESS_PLACEMENT=0
+
+# bridges doesn't have $WORK
+export WORK=$HOME
+
+export MyTransport=NATIVE_STAGING_DIMES
+
+#source ${PBS_O_WORKDIR}/scripts_bridges/common.sh
+source ${PBS_O_WORKDIR}/scripts/native_staging.sh
+
+

@@ -1,0 +1,97 @@
+#!/bin/bash  
+#SBATCH -J "ds_test"  
+#SBATCH -o "results/ds_test_%j.out"  
+#SBATCH -p normal
+#SBATCH -N 8
+#SBATCH --ntasks-per-node=64
+#SBATCH -t 00:5:00  
+#SBATCH --mail-type=BEGIN
+# send mail to this address
+#SBATCH --mail-user=lifen@iupui.edu
+
+
+module list 
+
+# multiplier in each dim, 2 means it will totally use 8xprocess with 8x node
+STEP=10
+
+
+# procs placement
+num_apps=3
+
+# slots used by this app
+procs_this_app=(32 256 128)
+
+# number of nodes used by this app
+nodes_this_app=(2 4 2)
+
+###################################################
+
+export SCRATCH_DIR=${SCRATCH}/ds_test/${SLURM_JOBID}
+
+DS_BIN=${WORK}/envs/Dataspacesroot/bin
+PBS_RESULTDIR=${SCRATCH_DIR}/results
+
+mkdir -pv ${PBS_RESULTDIR}
+mkdir -pv ${SCRATCH_DIR}
+
+cd ${SCRATCH_DIR}
+
+## Clean up
+rm -f conf *.log srv.lck
+rm -f dataspaces.conf
+
+
+## Create dataspaces configuration file
+echo "## Config file for DataSpaces
+ndim = 3
+dims = 512,512,512
+max_versions = 1
+max_readers = 1
+lock_type = 2
+" > dataspaces.conf
+
+echo "launching server"
+
+# this scripts is avaliable at
+GENERATE_HOST_SCRIPT=${HOME}/Downloads/LaucherTest/generate_hosts.sh
+if [ -a $GENERATE_HOST_SCRIPT ]; then
+    source $GENERATE_HOST_SCRIPT
+else
+    echo "cannot find the file generate_hosts.sh in the path $GENERATE_HOST_SCRIPT"
+    echo "generate_hosts.sh should downloaded from:"
+    echo "https://github.iu.edu/lifen/LaucherTest/blob/master/generate_hosts.sh"
+fi
+
+LAUNCHER="mpiexec.hydra"
+
+
+
+## Run DataSpaces servers
+CMD_SERVER="${LAUNCHER}  -n ${procs_this_app[0]} -machinefile $HOST_DIR/machinefile-app0 ${DS_BIN}/dataspaces_server -s ${procs_this_app[0]} -c $((${procs_this_app[1]}+${procs_this_app[2]}))"
+$CMD_SERVER >& $PBS_RESULTDIR/server.log &
+echo "server applciation lauched: $CMD_SERVER"
+## Give some time for the servers to load and startup
+while [ ! -f conf ]; do
+    sleep 1s
+done
+sleep 5s  # wait server to fill up the conf file
+
+echo "launching produer"
+
+THIS_TRANSPORT=DATASPACES
+
+## Run writer application
+CMD_PRODUCER="${LAUNCHER}  -n ${procs_this_app[1]} -machinefile $HOST_DIR/machinefile-app1 ${DS_BIN}/test_writer ${THIS_TRANSPORT} ${procs_this_app[1]} 3 8 8 4 64 64 128 ${STEP} 1"
+$CMD_PRODUCER >& $PBS_RESULTDIR/put.log &
+echo "producer applciation lauched: $CMD_PRODUCER"
+
+echo "launching consumer"
+## Run reader application
+CMD_CONSUMER="${LAUNCHER}  -n ${procs_this_app[2]} -machinefile $HOST_DIR/machinefile-app2  ${DS_BIN}/test_reader ${THIS_TRANSPORT} ${procs_this_app[2]}  3 8 4 4 64 128 128 ${STEP} 2"
+$CMD_CONSUMER >& $PBS_RESULTDIR/get.log &
+echo " consumer applciation lauched $CMD_CONSUMER"
+
+## Wait for the entire workflow to finish
+wait
+

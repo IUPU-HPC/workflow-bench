@@ -1,0 +1,105 @@
+#!/bin/bash
+#SBATCH --job-name="adios_flexpath_nokeep"
+#SBATCH --output="results/%j.out"
+#SBATCH --partition=RM
+#SBATCH --nodes=3
+#SBATCH --ntasks-per-node=28
+#SBATCH -t 00:2:00
+
+#SBATCH --mail-type=BEGIN
+# send mail to this address
+#SBATCH --mail-user=lifen@iupui.edu
+
+#This job runs with 2 nodes, 24 cores per node for a total of 48 cores.
+#ibrun in verbose mode will give binding detail ##################parameter setting#################
+CASE_NAME=dataspaces_nokeep
+FILESIZE2PRODUCE=256 # 64*64*256*2*8 = 16MB per proc
+NSTOP=10 # how many steps
+
+# procs placement
+num_apps=2
+
+# slots used by this app
+procs_this_app=(12 6)
+
+# number of nodes used by this app
+nodes_this_app=(2 1)
+
+
+PBS_O_HOME=$HOME
+PBS_O_WORKDIR=$(pwd)
+export SCRATCH_DIR=${SCRATCH}/data_broker_adios/${SLURM_JOBID}
+
+export MyTransport=ADIOS_STAGING_FLEXPATH
+
+export OMP_NUM_THREADS=4
+
+export CM_INTERFACE=ib0
+
+env|grep '^CM'
+env|grep '^HAS' # trace enabled?
+env|grep '^OMP' # trace enabled?
+
+#module load libfabric
+module list
+
+echo "procs is \[ ${procs_this_app[*]}\], nodes is \[${nodes_this_app[*]}\]"
+
+BUILD_DIR=${PBS_O_WORKDIR}/build
+
+BIN_PRODUCER=${BUILD_DIR}/bin/run_lbm;
+BIN_CONSUMER=${BUILD_DIR}/bin/adios_staging_read;
+
+#This job runs with 3 nodes  
+#ibrun in verbose mode will give binding detail  #BUILD=${PBS_O_WORKDIR}/build_dspaces/bin
+PBS_RESULTDIR=${SCRATCH_DIR}/results
+
+
+
+mkdir -pv ${PBS_RESULTDIR}
+tune_stripe_count=-1
+lfs setstripe --stripe-size 1m --stripe-count ${tune_stripe_count} ${PBS_RESULTDIR}
+mkdir -pv ${SCRATCH_DIR}
+cd ${SCRATCH_DIR}
+cp -R ${PBS_O_WORKDIR}/adios_xmls ${SCRATCH_DIR}
+
+## this is a clean working dir
+#rm -f conf *.log srv.lck
+#rm -f dataspaces.conf
+
+# this scrWorkspaces/General_Data_Broker/lbm_adios/scripts
+GENERATE_HOST_SCRIPT=${HOME}/Workspaces/General_Data_Broker/lbm_adios/scripts/generate_hosts.sh
+#GENERATE_HOST_SCRIPT=${HOME}/Downloads/LaucherTest/generate_hosts.sh
+if [ -a $GENERATE_HOST_SCRIPT ]; then
+    source $GENERATE_HOST_SCRIPT
+else
+    echo "generate_hosts.sh should downloaded from:"
+    echo "https://github.iu.edu/lifen/LaucherTest/blob/master/generate_hosts.sh"
+fi
+
+if [ x"$HAS_TRACE" == "x" ];then
+    LAUNCHER="mpirun -l"
+else
+    #export LD_PRELOAD=libVT.so 
+    #LAUNCHER="mpiexec.hydra -trace"
+    LAUNCHER="mpiexec.hydra"
+fi
+
+
+echo "use transport method $CMTransport with CMTransportVerbose=$CMTransportVerbose"
+
+appid=0
+
+CMD_PRODUCER="remora $LAUNCHER -np ${procs_this_app[$appid]} -machinefile $HOST_DIR/machinefile-app${appid}  ${BIN_PRODUCER} ${NSTOP} ${FILESIZE2PRODUCE}"
+$CMD_PRODUCER  &> ${PBS_RESULTDIR}/producer.log &
+echo "producer applciation lauched: $CMD_PRODUCER"
+
+appid=$((appid+1))
+
+CMD_CONSUMER="$LAUNCHER -np ${procs_this_app[$appid]} -machinefile $HOST_DIR/machinefile-app${appid}  ${BIN_CONSUMER}"
+$CMD_CONSUMER  &> ${PBS_RESULTDIR}/consumer.log &
+echo " consumer applciation lauched $CMD_CONSUMER"
+
+## Wait for the entire workflow to finish
+wait
+

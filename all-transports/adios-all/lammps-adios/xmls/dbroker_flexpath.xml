@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<adios-config host-language="C">
+  <adios-group name="atom" stats="On">
+    <var name="nlocal" type="integer"/>
+    <var name="size_one" type="integer"/>
+    <var name="size" type="integer"/>
+    <var name="rank" type="integer"/>
+    <global-bounds dimensions="size_one,size, nlocal" offsets="size_one, rank, nlocal">
+       <var name="array" gwrite="t" type="double" dimensions="size_one, 1, nlocal" 
+            transform="none"/>
+    </global-bounds>
+  </adios-group>
+
+  <method group="atom" method="FLEXPATH">QUEUE_SIZE=10;</method>
+</adios-config>
+

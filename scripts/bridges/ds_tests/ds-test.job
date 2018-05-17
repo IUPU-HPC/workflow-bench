@@ -1,0 +1,109 @@
+#!/bin/bash  
+#SBATCH -J "ds_test"  
+#SBATCH -o "results/ds_test_%j.out"  
+#SBATCH -p RM
+#SBATCH -N 4
+#SBATCH --ntasks-per-node=28
+#SBATCH -t 00:3:00  
+#SBATCH --mail-type=BEGIN
+#SBATCH --export=ALL
+# send mail to this address
+#SBATCH --mail-user=lifen@iupui.edu
+
+#This job runs with 1 nodes, 6 cores per node for a total of 6 cores.  
+#ibrun in verbose mode will give binding detail  
+
+module list 
+
+# multiplier in each dim, 2 means it will totally use 8xprocess with 8x node
+MUL_PER_DIM=1
+STEP=10
+
+MUL=$(($MUL_PER_DIM*$MUL_PER_DIM*$MUL_PER_DIM))
+
+# procs placement
+num_apps=3
+
+# slots used by this app
+procs_this_app=($((MUL*4)) $((MUL*32)) $((MUL*16)))
+
+# number of nodes used by this app
+nodes_this_app=($((MUL*1)) $((MUL*2)) $((MUL*1)))
+
+###################################################
+
+PBS_O_HOME=$HOME
+PBS_O_WORKDIR=$(pwd)
+export SCRATCH_DIR=${SCRATCH}/ds_test/${SLURM_JOBID}
+export WORK=$HOME
+# from bridges: 
+#export I_MPI_JOB_RESPECT_PROCESS_PLACEMENT=0
+
+DS_BIN=${WORK}/envs/gcc_mvapich/Dataspacesroot/bin
+PBS_RESULTDIR=${SCRATCH_DIR}/results
+
+mkdir -pv ${PBS_RESULTDIR}
+mkdir -pv ${SCRATCH_DIR}
+
+cd ${SCRATCH_DIR}
+
+## Clean up
+rm -f conf *.log srv.lck
+rm -f dataspaces.conf
+
+
+## Create dataspaces configuration file
+echo "## Config file for DataSpaces
+ndim = 3
+dims = $(($MUL_PER_DIM*256)),$(($MUL_PER_DIM*256)),$(($MUL_PER_DIM*256))
+max_versions = 1
+max_readers = 1
+lock_type = 2
+" > dataspaces.conf
+
+echo "launching server"
+
+# this scripts is avaliable at
+GENERATE_HOST_SCRIPT=${HOME}/Downloads/LaucherTest/generate_hosts.sh
+if [ -a $GENERATE_HOST_SCRIPT ]; then
+    source $GENERATE_HOST_SCRIPT
+else
+    echo "generate_hosts.sh should downloaded from:"
+    echo "https://github.iu.edu/lifen/LaucherTest/blob/master/generate_hosts.sh"
+fi
+
+LAUNCHER="mpiexec.hydra"
+export MV2_ENABLE_AFFINITY=0 
+export MV2_USE_BLOCKING=1
+
+
+
+## Run DataSpaces servers
+CMD_SERVER="${LAUNCHER}  -n ${procs_this_app[0]} -machinefile $HOST_DIR/machinefile-app0 ${DS_BIN}/dataspaces_server -s ${procs_this_app[0]} -c $((${procs_this_app[1]}+${procs_this_app[2]}))"
+$CMD_SERVER >& $PBS_RESULTDIR/server.log &
+echo "server applciation lauched: $CMD_SERVER"
+## Give some time for the servers to load and startup
+while [ ! -f conf ]; do
+    sleep 1s
+done
+sleep 5s  # wait server to fill up the conf file
+
+echo "launching produer"
+
+THIS_TRANSPORT=DATASPACES
+#THIS_TRANSPORT=DIMES
+
+## Run writer application
+CMD_PRODUCER="${LAUNCHER}  -n ${procs_this_app[1]} -machinefile $HOST_DIR/machinefile-app1 ${DS_BIN}/test_writer ${THIS_TRANSPORT} ${procs_this_app[1]} 3 $(($MUL_PER_DIM*2)) $(($MUL_PER_DIM*4)) $(($MUL_PER_DIM*4)) 128 64 64 ${STEP} 1"
+$CMD_PRODUCER >& $PBS_RESULTDIR/put.log &
+echo "producer applciation lauched: $CMD_PRODUCER"
+
+echo "launching consumer"
+## Run reader application
+CMD_CONSUMER="${LAUNCHER}  -n ${procs_this_app[2]} -machinefile $HOST_DIR/machinefile-app2  ${DS_BIN}/test_reader ${THIS_TRANSPORT} ${procs_this_app[2]}  3 $(($MUL_PER_DIM*2)) $(($MUL_PER_DIM*2)) $(($MUL_PER_DIM*4)) 128 128 64 ${STEP} 2"
+$CMD_CONSUMER >& $PBS_RESULTDIR/get.log &
+echo " consumer applciation lauched $CMD_CONSUMER"
+
+## Wait for the entire workflow to finish
+wait
+

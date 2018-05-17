@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH --job-name="lammps_sim_only"
+#SBATCH --output="results/%j.out"
+#SBATCH --partition=normal
+#SBATCH --nodes=128
+#SBATCH --ntasks-per-node=68
+#SBATCH -t 00:8:00
+
+#SBATCH --mail-type=BEGIN
+# send mail to this address
+#SBATCH --mail-user=lifen@iupui.edu
+
+
+# procs placement
+num_apps=1
+
+# slots used by this app
+procs_this_app=(4352)
+
+# number of nodes used by this app
+nodes_this_app=(2176)
+
+
+NSTOP=100
+infile=in.lj.${procs_this_app[0]}v$((procs_this_app[0]/2)).txt
+
+
+PBS_O_HOME=$HOME
+PBS_O_WORKDIR=$(pwd)
+export SCRATCH_DIR=${SCRATCH}/lammps_decaf/${SLURM_JOBID}
+
+source scripts/lammps_only.sh
+
+
+
+

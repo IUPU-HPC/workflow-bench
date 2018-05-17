@@ -1,0 +1,32 @@
+#!/bin/bash
+#SBATCH --job-name="decaf_lbm"
+#SBATCH --output="results/%j.out"
+#SBATCH --partition=normal
+#SBATCH --nodes=16
+#SBATCH --ntasks-per-node=68
+#SBATCH -t 00:8:00
+
+#SBATCH --mail-type=BEGIN
+# send mail to this address
+#SBATCH --mail-user=lifen@iupui.edu
+NSTOP=100
+
+# procs placement
+num_apps=3
+
+# slots used by this app
+procs_this_app=(272 256 136)
+
+# number of nodes used by this app
+nodes_this_app=(8 4 4)
+
+
+PBS_O_HOME=$HOME
+PBS_O_WORKDIR=$(pwd)
+export SCRATCH_DIR=${SCRATCH}/decaf_skel/${SLURM_JOBID}
+
+source ${PBS_O_WORKDIR}/scripts/decaf.sh
+
+
+
+

@@ -1,0 +1,158 @@
+#!/bin/bash
+#
+# This script is for configuring adios on the authors' machines
+# You can study it to figure out how to configure adios on your system
+#
+
+SRCDIR=`dirname ${BASH_SOURCE[0]}`
+
+if [ `hostname | cut -c 1-2` == "br" ]; then
+
+    #######################
+    # Bridges             #
+    #######################
+    echo "Configure on ADIOS On Bridges."
+
+
+    if [[ $1 == tau ]]; then
+        echo "using tau compiler and mpi"
+        #myCC=tau_cc.sh
+        #myCXX=tau_cxx.sh
+        #myFC=tau_f90.sh
+        # run with make CC=tau_cc.sh
+        ## tau  is instructed with gcc, instaled by Feng Li in env
+        myCC=tau_cc.sh
+        myCXX=tau_cxx.sh
+        myFC=tau_f90.sh
+        myDataspaces=${HOME}/envs/Dataspacesroot_tau
+        myFlexpath=${HOME}/envs/Flexpath_gcc_mvapich_tau/
+        myprefix=${HOME}/envs/ADIOSroot_gcc_mvapich_tau
+
+    # if use intel compiler/mpi
+    elif [[ $1 == intel ]]; then
+        echo "using intel compiler and mpi"
+        myCC=mpiicc
+        myCXX=mpiicpc
+        myFC=mpiifort
+        myDataspaces=${HOME}/envs/Dataspacesroot
+        myFlexpath=${HOME}/envs/Flexpath
+        myprefix=${HOME}/envs/ADIOSroot
+
+
+        
+    else
+        echo "using gnu compiler with mvapich"
+        myCC=mpicc
+        myCXX=mpicxx
+        myFC=mpif90
+        myDataspaces=${HOME}/envs/gcc_mvapich/Dataspacesroot
+        myFlexpath=${HOME}/envs/gcc_mvapich/Flexpath
+        myprefix=${HOME}/envs/gcc_mvapich/ADIOSroot
+
+        
+    fi
+    module list
+
+    #rdmacm_root=~/envs/rdmacm/
+
+    ./configure --prefix=${myprefix} \
+        CC=${myCC} \
+        CXX=${myCXX} \
+        FC=${myFC} \
+        MPICC=${myCC} \
+        MPICXX=${myCXX} \
+        MPIFC=${myFC} \
+        CFLAGS="-O3 -fPIC"\
+        LIBS="-lrdmacm -libverbs -lpthread -lm" \
+        --enable-dependency-tracking \
+        --enable-timers \
+        --disable-fortran \
+        --disable-timer-events \
+        --with-dataspaces=${myDataspaces} \
+        --with-dimes=${myDataspaces}  \
+        --with-flexpath=${myFlexpath} \
+
+elif [ `hostname | cut -c 8-16` == "stampede2" ]; then
+    #######################
+    # Stampede #
+    #######################
+    echo "Configure on  stampede2"
+    
+    if [[ $1 == tau ]]; then
+        myCC=tau_cc.sh
+        myCXX=tau_cxx.sh
+        myFC=tau_f90.sh
+        myDataspaces=${WORK}/envs/Dataspacesroot_tau
+        myprefix=${WORK}/envs/ADIOSroot_tau
+    else
+        myCC=mpicc
+        myCXX=mpicxx
+        myFC=mpif90
+        myCFLAGS="-xCORE-AVX2 -axMIC-AVX512"
+        myDataspaces=${WORK}/envs/Dataspacesroot
+        myprefix=${WORK}/envs/ADIOSroot
+    fi
+    module list
+
+    #rdmacm_root=~/envs/rdmacm/
+
+    ./configure --prefix=${myprefix} \
+        CC=${myCC} \
+        CXX=${myCXX} \
+        FC=${myFC} \
+        MPICC=${myCC} \
+        MPICXX=${myCXX} \
+        MPIFC=${myFC} \
+        CFLAGS="-O3 -fPIC ${myCFLAGS}" \
+        LIBS="-lrdmacm -libverbs -lpthread -lm" \
+        --enable-dependency-tracking \
+        --enable-timers \
+        --disable-fortran \
+        --disable-timer-events \
+        --with-dataspaces=${myDataspaces} \
+        --with-dimes=${myDataspaces}  \
+        --with-flexpath=${WORK}/envs/Flexpath \
+
+
+
+elif [ `hostname | cut -c 1-5` == "comet" ]; then
+
+    #######################
+    # Comet        #
+    #######################
+    echo "Configure ADIOS on Comet."
+    module purge
+    module load gnutools/2.69
+    module load gnu mvapich2_ib
+    module load cmake
+    #module load gnutools
+    #module load gnu openmpi_ib
+    #module load cmake
+
+
+    export MPICC=mpicc
+    export MPICXX=mpicxx
+    export MPIFC=mpif90
+    export CC=mpicc
+    export CXX=mpicxx
+    export FC=mpif90
+
+    export CFLAGS="-g -O3 -fPIC  "
+    export LIBS="-lrdmacm -libverbs -lpthread -lm"
+    ${SRCDIR}/configure --prefix=${HOME}/envs/ADIOSroot \
+        --enable-dependency-tracking \
+        --enable-timers \
+        --disable-timer-events \
+        --disable-fortran \
+        --with-dataspaces=${HOME}/envs/Dataspacesroot  \
+        --with-dimes=${HOME}/envs/Dataspacesroot  \
+        --with-flexpath=${HOME}/envs/Flexpath \
+
+else
+    echo "Could not determine what machine is this."
+    echo "This script is for configuring adios on the authors' machines."
+    echo "You can study it to figure out how to configure adios on your system."
+fi
+    
+    
+    

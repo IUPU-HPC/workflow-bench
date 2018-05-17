@@ -1,0 +1,12 @@
+cmake .. \
+-DCMAKE_INSTALL_PREFIX=$WORK/software/install \
+-DCMAKE_C_COMPILER=gcc \
+-DCMAKE_CXX_COMPILER=g++ \
+-DCMAKE_CXX_FLAGS=-O3 \
+-DCMAKE_CXX_FLAGS=-O3 \
+-Dtransport_mpi=on \
+-Dtransport_cci=on \
+-Dtransport_file=off \
+-DCCI_PREFIX:PATH=$WORK/software/install \
+-DBOOST_ROOT:PATH=$WORK/software/install
+

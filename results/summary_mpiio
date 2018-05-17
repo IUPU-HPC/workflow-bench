@@ -1,0 +1,28 @@
+May 8
+1125264
+    output after barrier
+1125023:
+    add barrier after bcast
+1125013
+    stall at:
+    set stamp as 277 at 1494334953.064992
+    set stamp as 277 at 1494334953.065391
+    rank 10: Step 277 moments calculated,t_prepare 0.019291, t_read 0.052096, t_close 0.167685, t_analy 0.390701, time1494334953.074993
+
+    rank 2 waiting
+
+1123096
+    try again
+    step 277
+    
+1122820
+    add timer in each step for all procs, try to find why it stops at step 277 steps
+    it's the time the producer terminate!
+1122766
+    mpiio pause after 277 steps
+    all 300 steps:
+    prod:
+        stat:time for prepare 10.243808s, read 71.566252 s; time for close 8.871370 s; time for analy 120.676256 s
+        t_prepare:0.102564 s, t_cal 113.854423 s,t_buffer = 1.216957, t_write 217.707324 s, t_put 0.000000 s
+stat:Simulation stop at 1494267867.365333
+    

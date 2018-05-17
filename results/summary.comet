@@ -1,0 +1,20 @@
+9043263
+    raw dataspacs again
+    wait for results
+    still err
+904032/9042919
+    mpiio version
+    wait for results
+    still err
+ 
+9036590
+    rpc connection error
+    /oasis/scratch/comet/rlu/temp_project/data_broker_adios/9036590/results/consumer.log
+9038461
+    PMI error
+    reason:process exit may due to incorrect main function arguments)
+9036937
+    rpc_read_conf failed with -2
+    'dcg_alloc()': failed with -12
+    reason:server not started, 
+
