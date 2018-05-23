@@ -3,6 +3,6 @@
 Overview
 ==========
 
-Documentation for the HPDC '18 paper 
+workflow-bench, which is used in the HPDC '18 paper, is a tool to benchmark the performance of different transport methods in workflows.
 
 **Performance Analysis and Optimization of In-situ Integration of Simulation with Data Analysis: Zipping Applications Up**
