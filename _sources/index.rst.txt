@@ -21,7 +21,7 @@ This is the documentation of workflow-bench.
 
 .. toctree::
     :maxdepth: 2
-    :caption: Misc Notes
+    :caption: Misc 
 
     notes
 
