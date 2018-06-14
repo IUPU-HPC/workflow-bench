@@ -5,5 +5,11 @@ Notes
 
 LBM code
 ------------------
-Whey LBM code cannot be released?
+
+Why LBM code cannot be released?
+
+The LBM code we have used in the HPDC18 paper is from Dr. Luoding Zhu at IUPUI.
+(i.e., the "mod_lbm" used in all-transports/adios-all/lbm-adios/CMakeLists.txt)
+Currently we don't have the proper license to release it here.  
+
 

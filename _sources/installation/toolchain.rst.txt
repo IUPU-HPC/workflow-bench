@@ -3,10 +3,10 @@
 Toolchain settings
 ==============================
 
-how to build
+How to build
 -----------------------
 
-Different compiler settings are used using the cmake toochain
+Different compiler settings are used using the cmake toochain.
 The build command will be like::
 
     cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Bridges.toolchain.cmake  ..
@@ -16,10 +16,10 @@ For builds in Stampede 2::
     cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/Stampede2.toolchain.cmake  ..
 
 
-control supported transports
+Control supported transports
 ------------------------------
 
-If you don't have lammps/adios/dspaces/decaf installed, you should add the following argument in you cmake command::
+If you don't have lammps/adios/dspaces/decaf installed, you should add the following argument in your cmake command::
 
     cmake .. \
         -DCMAKE_TOOLCHAIN_FILE=../cmake/Stampede2.toolchain.cmake \
@@ -47,7 +47,4 @@ To add  support for TAU trace from Univ Oregon::
 
     mkdir build
     cmake -DCMAKE_BUILD_TYPE=Stampede_TAU ..
-    make -j4 
-
-
-
+    make 

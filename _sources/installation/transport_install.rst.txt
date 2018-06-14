@@ -32,7 +32,7 @@ ADIOS can be obtained  by
 
 .. code-block:: shell
     
-    wget wget http://users.nccs.gov/~pnorbert/adios-1.13.0.tar.gz
+    wget http://users.nccs.gov/~pnorbert/adios-1.13.0.tar.gz
 
 It can be configured using the script:
 

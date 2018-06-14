@@ -5,12 +5,12 @@ Environments
 
 PSC Bridges, more information in `Bridges page`_
 
-.. _Bridges page: <https://www.psc.edu/bridges>
+.. _Bridges page: https://www.psc.edu/bridges
 
 
 Stampede 2: more information in `Stampede2 page`_
 
-.. _Stampede2 page: https://portal.tacc.utexas.edu/user-guides/stampede2>
+.. _Stampede2 page: https://portal.tacc.utexas.edu/user-guides/stampede2
 
 Loadable Modules
 ============================
